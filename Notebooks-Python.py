@@ -1204,7 +1204,99 @@ ValueError: too many values to unpack (expected 3)
 唯一的硬性要求是，被拆包的对象的元素数量必须和接受这些元素的元组的空档数一致，除非用*来表示忽略多余的元素。
 
 
-24， 
+
+24， socket 模仿http请求
+
+import socket
+from urllib.parse import urlparse
+
+
+def ciaye(url):
+    # 通过socket请求html
+    url = urlparse(url)
+    host = url.netloc
+    path = url.path
+    if path == '':
+        path = '/'
+
+    # 建立socket链接
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((host, 80))
+
+    # 发送请求
+    client.send('GET {} HTTP/1.1\r\nHost:{}\r\nConnection:close\r\n\r\n'.format(path, host).encode('utf8'))
+
+    data = b''
+    while True:
+        d = client.recv(1024)
+        if d:
+            data += d
+        else:
+            break
+    print(data.decode('utf8'))
+    client.close()
+
+
+if __name__ == '__main__':
+    ciaye('http://www.baidu.com')
+
+
+25，socket 仿造聊天软件
+
+服务端
+import socket
+import threading
+
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(('0.0.0.0', 8000))
+server.listen()
+# sock, addr = server.accept()
+
+def handle_sock(sock, addr):
+    while True:
+        data = sock.recv(2048)
+        if data == 'bye':
+            break
+        print(data.decode('utf8'))
+        re_data = input('--》')
+        sock.send(re_data.encode('utf8'))
+    sock.close()
+
+
+# 获取从客户端发送的数据
+# 一次获取1k的数据
+while True:
+    sock, addr = server.accept()
+
+    # 用线程去处理新接收的链接(用户)
+    client_thread = threading.Thread(target=handle_sock, args=(sock, addr))
+    client_thread.start()
+
+
+    # data = sock.recv(2048)
+    # print(data.decode('utf8'))
+    # re_data = input('--》')
+    # sock.send(re_data.encode('utf8'))
+    # server.close()
+    # sock.close()
+
+
+客户端
+import socket
+
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(('127.0.0.1', 8000))
+while True:
+    # client.send('caiye i love you'.encode('utf8'))
+    re_data = input('--->')
+    client.send(re_data.encode('utf8'))
+    if re_data == 'bye':
+        break
+    data = client.recv(2048)
+    print(data.decode('utf8'))
+client.close()
 
 
 
