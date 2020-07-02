@@ -198,4 +198,227 @@ if __name__ == '__main__':
     print(time.time() - t0)
 
 
-    
+
+2 ， threading.Condition 条件变量，（解决线程间的同步问题）
+
+很详细的说明
+# https://www.jianshu.com/p/5d2579938517
+
+
+import threading
+from threading import Condition
+
+
+class XiaoAi(threading.Thread):
+
+    def __init__(self, name, cond):
+        super().__init__(name=name)
+        self.cond = cond
+
+    def run(self):
+        with self.cond:
+
+            self.cond.wait()
+            print('{}: 在1 '.format(self.name))
+            self.cond.notify()
+
+            self.cond.wait()
+            print('{}: 在2 '.format(self.name))
+            self.cond.notify()
+
+            self.cond.wait()
+            print('{}: 在3 '.format(self.name))
+            self.cond.notify()
+
+            self.cond.wait()
+            print('{}: 在4 '.format(self.name))
+            self.cond.notify()
+
+            self.cond.wait()
+            print('{}: 在5 '.format(self.name))
+            self.cond.notify()
+
+
+class TianMao(threading.Thread):
+
+    def __init__(self, cond, name):
+        super().__init__(name=name)
+        self.cond = cond
+
+    def run(self):
+        with self.cond:
+            print('{}: 在吗1'.format(self.name))
+            self.cond.notify()
+            self.cond.wait()
+
+            print('{}: 在吗2'.format(self.name))
+            self.cond.notify()
+            self.cond.wait()
+
+            print('{}: 在吗3'.format(self.name))
+            self.cond.notify()
+            self.cond.wait()
+
+            print('{}: 在吗4'.format(self.name))
+            self.cond.notify()
+            self.cond.wait()
+
+            print('{}: 在吗5'.format(self.name))
+            self.cond.notify()
+            self.cond.wait()
+
+
+if __name__ == '__main__':
+    cond = Condition()
+    xiaoai = XiaoAi(cond=cond, name='小爱')
+    tianmao = TianMao(cond=cond, name='天猫同学')
+
+    # 启动顺序很重要
+    # 在调用with cond之后才能调用wait或者notify方法
+
+    # condition有两层锁， 一把底层锁会在线程调用了wait方法的时候释放，
+    # 上面的锁会在每次调用wait的时候分配一把并放入到cond的等待队列中，等到notify方法的唤醒
+    xiaoai.start()
+    tianmao.start()
+
+
+3， threading.Semaphore
+
+#Semaphore 是用于控制进入数量的锁
+#文件， 读、写， 写一般只是用于一个线程写，读可以允许有多个
+
+import time
+import threading
+
+
+class HtmlSpider(threading.Thread):
+    def __init__(self, url, sem):
+        super(HtmlSpider, self).__init__()
+        self.url = url
+        self.sem = sem
+
+    def run(self):
+        time.sleep(2)
+        print('got html text success')
+        self.sem.release()
+
+
+class UrlProducer(threading.Thread):
+    def __init__(self, sem):
+        super().__init__()
+        self.sem = sem
+
+    def run(self):
+        for i in range(20):
+            self.sem.acquire()
+            html_thread = HtmlSpider('https://www.baidu.com/%d' % i, self.sem)
+            html_thread.start()
+
+
+if __name__ == '__main__':
+    sem = threading.Semaphore(3)
+    urlpro = UrlProducer(sem)
+    urlpro.start()
+
+
+
+4, concurrent 模块
+
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait, FIRST_COMPLETED
+from concurrent.futures import Future
+from multiprocessing import Pool
+
+#未来对象，task的返回容器
+
+
+#线程池， 为什么要线程池
+#主线程中可以获取某一个线程的状态或者某一个任务的状态，以及返回值
+#当一个线程完成的时候我们主线程能立即知道
+
+#futures可以让多线程和多进程编码接口一致
+
+
+def geturldetail(times):
+    time.sleep(times)
+    print('get page {} success'.format(times))
+    return times
+
+
+executor = ThreadPoolExecutor(max_workers=2)  # 获取线程池
+
+
+# 通过submit函数提交执行的函数到线程池中, submit 是立即返回
+task1 = executor.submit(geturldetail, (3))
+task2 = executor.submit(geturldetail, (2))
+
+
+# #done方法用于判定某个任务是否完成
+print(task1.done())
+print(task2.cancel())
+time.sleep(3)
+print(task1.done())
+#输出
+# False
+# False
+# get page 2 success
+# get page 3 success
+# True
+
+# #result方法可以获取task的执行结果
+print(task1.result())
+#输出
+# get page 2 success
+# get page 3 success
+# 3
+
+
+# 获取已经成功的task的返回
+urls = [3, 2, 4]
+all_task = [executor.submit(geturldetail, (url)) for url in urls]
+for future in as_completed(all_task):
+    data = future.result()
+    print('get {}'.format(data))
+
+# 输出
+get page 2 success
+get 2
+get page 3 success
+get 3
+get page 4 success
+get 4
+
+
+# 通过 executor的map获取已经成功完成的task
+urls = [3, 2, 4]
+for future in executor.map(geturldetail, urls):
+    print('get {}'.format(future))  # 输出的结果跟urls的元素顺序有关
+#输出
+get page 2 success
+get page 3 success
+get 3
+get 2
+get page 4 success
+get 4
+
+# 阻塞主线程
+urls = [3, 2, 4]
+all_task = [executor.submit(geturldetail, (url)) for url in urls]
+print('main')
+#输出
+main
+get page 2 success
+get page 3 success
+get page 4 success
+#而
+urls = [3, 2, 4]
+all_task = [executor.submit(geturldetail, (url)) for url in urls]
+wait(all_task) # 会阻塞主线程，等到all_task全部执行完，再执行主线程
+print('main')
+输出：
+main
+get page 2 success
+get page 3 success
+get page 4 success
+
+
