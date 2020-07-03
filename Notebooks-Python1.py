@@ -422,3 +422,97 @@ get page 3 success
 get page 4 success
 
 
+
+5， 生成器进阶
+
+def get_func():
+    # 下面这句话包含两个意思
+    # 1， 可以 [yield 'https://www.baidu.com'] 可以产出值
+    # 2， html 放在yield前面可以接受调用方传进来的值
+    html = yield 'https://www.baidu.com'
+    print(html)
+    yield 2
+    yield 'maozhu'
+    return 'duoduo'
+
+
+if __name__ == '__main__':
+    gen = get_func()
+    # 在调用send发送非none值之前，我们必须启动一次生成器， 方式有两种1. gen.send(None), 2. next(gen)
+    url = gen.send(None)
+    print(url)  # 输出: https://www.baidu.com
+    html = 'I miss Caiye'
+    print(gen.send(html)) #send方法可以传递值进入生成器内部，同时还可以重启生成器执行到下一个yield位置
+    print(gen.send(None))
+    
+    # 捕获return的返回值
+    try: 
+        print(gen.send(None))
+    except StopIteration as e:
+        sss = e.value
+        print(sss)
+
+输出：
+https://www.baidu.com
+I miss Caiye
+2
+maozhu
+duoduo
+
+
+6， yield from
+
+# python3.3新加入yield from 语法
+from itertools import chain # 可以把n个可以可迭代对象连接在一起遍历
+
+
+my_list = [1, 2, 3]
+my_dict = {
+    'first': 'caiye',
+    'second': 'maozhu'
+}
+
+for value in chain(my_list, my_dict, range(6, 9)):
+    print(value)
+
+# 输出
+1
+2
+3
+first
+second
+6
+7
+8
+
+现在我们自己实现一个chain函数
+def my_func(*args, **kwargs):
+    for i in args:
+        for value in i:
+            yield value
+
+for value in my_func(my_list, my_dict, range(6, 9)):
+    print(value) 
+
+
+现在我们使用yield from 来简化my_func函数
+def my_func(*args, **kwargs):
+    for i in args:
+        yield from i # yield from 后面跟的是iterable对象
+
+
+首先来了解一下yield from 和 yield 的区别
+
+
+def g1(iterable):
+    yield iterable
+
+def g2(iterable):
+    yield from iterable
+
+for value in g1(range(10)):
+    print(value)  # 输出的是：range(0, 10)
+for value in g2(range(10)):
+    print(value)  # 输出的就是： 0 1 2 3 4 5 6 7 8 9
+
+
