@@ -515,4 +515,6 @@ for value in g1(range(10)):
 for value in g2(range(10)):
     print(value)  # 输出的就是： 0 1 2 3 4 5 6 7 8 9
 
+实例：
+
 
