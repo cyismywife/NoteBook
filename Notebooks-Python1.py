@@ -521,3 +521,6 @@ for value in g2(range(10)):
 
 7 asyncio 协程
 实例
+async def caiye():
+    pass
+    
