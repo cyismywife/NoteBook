@@ -443,6 +443,7 @@ if __name__ == '__main__':
     print(url)  # 输出: https://www.baidu.com
     html = 'I miss Caiye'
     print(gen.send(html)) #send方法可以传递值进入生成器内部，同时还可以重启生成器执行到下一个yield位置
+    # 上面的语句输出 I am caiye 和 2
     print(gen.send(None))
     
     # 捕获return的返回值
