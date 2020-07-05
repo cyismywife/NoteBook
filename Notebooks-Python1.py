@@ -519,3 +519,4 @@ for value in g2(range(10)):
 实例：
 
 
+7 asyncio 协程
