@@ -516,7 +516,78 @@ for value in g1(range(10)):
 for value in g2(range(10)):
     print(value)  # 输出的就是： 0 1 2 3 4 5 6 7 8 9
 
-实例：
+总结，“ 生成器 、元组、 列表、range（）函数产生的序列等可迭代对象”返回另外一个生成器。而yield只是返回一个元素
+yield from iterable本质上等于 for item in iterable: yield item的缩写版
+
+例子1：
+def my_generator():
+    for i in range(5):
+        if i==2:
+            return '我被迫中断了'
+        else:
+            yield i
+ 
+def wrap_my_generator(generator):  #定义一个包装“生成器”的生成器，它的本质还是生成器
+    result=yield from generator    #自动触发StopIteration异常，并且将return的返回值赋值给yield from表达式的结果，即result
+    print(result)
+ 
+def main(generator):
+    for j in generator:
+        print(j)
+ 
+g=my_generator()
+wrap_g=wrap_my_generator(g)
+main(wrap_g)  #调用
+'''运行结果为：
+0
+1
+我被迫中断了
+'''
+
+例子2：
+from collections import namedtuple
+
+Result = namedtuple('Result', 'count average')
+
+def averager():
+    # 子生成器
+    total = 0.0
+    count = 0
+    average = None
+    while True:
+        term = yield
+        if term is None:
+            break
+        total += term
+        count += 1
+        average = total / count
+    return Result(count, average)
+
+def grouper(result, key):
+    # 委派生成器
+    while True:
+        result[key] = yield from averager()
+
+def main(data):
+    # 调用方
+    results = {}
+    for key, values in data.items():
+        group = grouper(results, key)
+        next(group)
+        for value in values:
+            group.send(value) # 这里会把value的值通过委派生成器(相当于管道)直接赋值给子生成器中的term(term = yield)，而grouper函数中没有对数据做任何处理
+        group.send(None)
+    return results
+
+data = {'上海':[88, 77, 88, 99], '南京':[22, 11, 22, 33]}
+print(main(data))
+
+委派生成器在 yield from 表达式处暂停时，调用方可以直接把数据发给子生成器，子生成器再把产出的值发给调用方。
+子生成器返回之后，解释器会抛出StopIteration 异常，并把返回值附加到异常对象上，此时委派生成器会恢复。
+总结：（1）yield from主要设计用来向子生成器委派操作任务，但yield from可以向任意的可迭代对象委派操作；
+（2）委派生成器（group）相当于管道，所以可以把任意数量的委派生成器连接在一起---
+一个委派生成器使用yield from 调用一个子生成器，而那个子生成器本身也是委派生成器，使用yield from调用另一个生成器。
+
 
 
 7 asyncio 协程
