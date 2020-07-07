@@ -905,3 +905,83 @@ Cacelled
  创建future的时候，task为pending，事件循环调用执行的时候当然就是running，调用完毕自然就是done，
 如果需要停止事件循环，中途需要取消，就需要先把task取消，即为cancelled。
 
+
+
+13 多线程结合asyncio解决调用时的假死
+
+1、asyncio专门实现Concurrency and Multithreading（多线程和并发）的函数介绍
+
+为了让一个协程函数在不同的线程中执行，我们可以使用以下两个函数
+（1）loop.call_soon_threadsafe(callback, *args)，这是一个很底层的API接口，一般很少使用，本文也暂时不做讨论。
+（2）asyncio.run_coroutine_threadsafe(coroutine，loop)
+
+第一个参数为需要异步执行的协程函数，第二个loop参数为在新线程中创建的事件循环loop，注意一定要是在新线程中创建哦，该函数的返回值是一个concurrent.futures.Future类的对象，用来获取协程的返回结果。
+
+future = asyncio.run_coroutine_threadsafe(coro_func(), loop)   # 在新线程中运行协程
+
+result = future.result()   #等待获取Future的结果
+
+
+实例：
+import asyncio, time, threading
+
+
+# 需要执行的耗时异步任务
+async def func(num):
+    print(f'准备调用func,大约耗时{num}')
+    await asyncio.sleep(num)
+    print(f'耗时{num}之后,func函数运行结束')
+
+
+# 定义一个专门创建事件循环loop的函数，在另一个线程中启动它
+def start_loop(loop):
+    asyncio.set_event_loop(loop)
+    print(threading.current_thread())  # 此处表明这是个新的线程
+    loop.run_forever()
+    # print(threading.current_thread())
+
+
+# 定义一个main函数
+def main():
+    coroutine1 = func(3)
+    coroutine2 = func(2)
+    coroutine3 = func(1)
+
+    new_loop = asyncio.new_event_loop()  # 在当前线程下创建时间循环，（未启用），在start_loop里面启动它
+    t = threading.Thread(target=start_loop, args=(new_loop,))  # 通过当前线程开启新的线程去启动事件循环
+    t.start()
+
+    asyncio.run_coroutine_threadsafe(coroutine1, new_loop)  # 这几个是关键，代表在新线程中事件循环不断“游走”执行
+    asyncio.run_coroutine_threadsafe(coroutine2, new_loop)
+    asyncio.run_coroutine_threadsafe(coroutine3, new_loop)
+
+    print(threading.currentThread()) # 主线程
+
+    for i in "iloveu":
+        print(str(i) + "    ")
+
+
+if __name__ == "__main__":
+    main()
+
+
+输出：
+<Thread(Thread-1, started 15660)>
+准备调用func,大约耗时3
+准备调用func,大约耗时2
+准备调用func,大约耗时1
+<_MainThread(MainThread, started 8492)>
+i    
+l    
+o    
+v    
+e    
+u    
+耗时1之后,func函数运行结束
+耗时2之后,func函数运行结束
+耗时3之后,func函数运行结束
+
+
+
+
+
