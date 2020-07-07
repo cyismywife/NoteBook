@@ -907,7 +907,7 @@ Cacelled
 
 
 
-13 多线程结合asyncio解决调用时的假死
+13 多线程结合asyncio解决调用时的假死  （查看program_playdead.py 文件中的实例，更加直观）
 
 1、asyncio专门实现Concurrency and Multithreading（多线程和并发）的函数介绍
 
