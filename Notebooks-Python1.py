@@ -198,6 +198,10 @@ if __name__ == '__main__':
     print(time.time() - t0)
 
 
+threading.currentThread()
+threading.current_thread() 返回线程本身
+
+
 
 2 ， threading.Condition 条件变量，（解决线程间的同步问题）
 
@@ -688,7 +692,12 @@ Future是Task的父类，一般情况下，已不用去管它们两者的详细�
 两者都是在协程需要并发的时候使用。
 
 wait接受一个协程列表，返回done, peding两个集合，done里面是完成任务的协程，pending表示仍在跑的协程，通过协程.result()的方法来获取完成的结果。<coroutine object wait at 0x1095a17c8>
+
+
 gather以gather(cro1, cro2, cro3, cro4…)的方式接受协程，返回的是一个结合了这么多个任务的协程<_GatheringFuture pending>，如果协程有返回值，则会返回协程充公运行之后的结果。
+gather的返回值是它所绑定的所有任务的执行结果，而且顺序是不变的，即返回的result的顺序和绑定的顺序是保持一致的。
+除此之外，它是awaitable的，所以，如果需要获取多个任务的返回值，既然是awaitable的，就需要将它放在一个函数里面，所以我们引入一个包装多个任务的入口main，这也是python3.7的思想
+
 
 async def func1(num):
     print('--func1 start--')
@@ -833,3 +842,66 @@ loop.run_until_complete(do_some_work(loop, 3))  # 此处异常
 第二步：启动主函数main
 这是python3.7新添加的函数，就一句话，即
 asyncio.run(main())
+
+
+
+11 、Future对象的常用方法
+
+（1）result()。返回Future执行的结果返回值
+如果Future被执行完成，如果使用set_result()方法设置了一个结果，那个设置的value就会被返回；
+如果Future被执行完成，如果使用set_exception()方法设置了一个异常，那么使用这个方法也会触发异常；
+如果Future被取消了，那么使用这个方法会触发CancelledError异常；
+如果Future的结果不可用或者是不可达，那么使用这个方法也会触发InvalidStateError异常；
+
+（2）set_result(result)
+
+标记Future已经执行完毕，并且设置它的返回值。
+
+（3）set_exception(exception)
+
+标记Future已经执行完毕，并且触发一个异常。
+
+（4）done()
+
+如果Future1执行完毕，则返回 True 。
+
+（5）cancelled()
+
+判断任务是否取消。
+
+（6）add_done_callback(callback, *, context=None)
+
+在Future完成之后，给它添加一个回调方法，这个方法就相当于是loop.call_soon()方法，参见前面，如下例子：
+如果要回调带有关键字参数的函数，也需要使用partial方法哦。
+
+（7）remove_done_callback(callback)
+
+（8）cancel()
+
+（9）exception()
+
+（10）get_loop()  返回Future所绑定的事件循环
+
+Future补充
+asyncio中的Future类是模仿concurrent.futures.Future类而设计的，关于concurrent.futures.Future，可以查阅相关的文档。它们之间的主要区别是：
+
+（1）asyncio.Future对象是awaitable的，但是concurrent.futures.Future对象是不能够awaitable的；
+（2）asyncio.Future.result()和asyncio.Future.exception()是不接受关键字参数timeout的；
+（3）当Future没有完成的时候，asyncio.Future.result()和asyncio.Future.exception()将会触发一个InvalidStateError异常；
+（4）使用asyncio.Future.add_done_callback()注册的回调函数不会立即执行，它可以使用loop.call_soon代替；
+（5）asyncio里面的Future和concurrent.futures.wait()以及concurrent.futures.as_completed()是不兼容的。
+
+
+
+12， 协程的四种状态
+协程函数相比于一般的函数来说，我们可以将协程包装成任务Task，任务Task就在于可以跟踪它的状态，我就知道它具体执行到哪一步了，
+一般来说，协程函数具有4种状态，可以通过相关的模块进行查看，请参见前面的文章，他的四种状态为：
+
+Pending
+Running
+Done
+Cacelled
+
+ 创建future的时候，task为pending，事件循环调用执行的时候当然就是running，调用完毕自然就是done，
+如果需要停止事件循环，中途需要取消，就需要先把task取消，即为cancelled。
+
