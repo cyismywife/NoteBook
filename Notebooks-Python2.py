@@ -62,3 +62,62 @@ s.score = 99 # 不会报错
 当一个类需要创建大量实例时，可以使用__slots__来减少内存消耗。如果对访问属性的速度有要求，也可以酌情使用。另外可以利用slots的特性来限制实例的属性。
 而用在普通类身上时，使用__slots__后会丧失动态添加属性和弱引用的功能，进而引起其他错误，所以在一般情况下不要使用它。
 
+
+
+2， setdefault  与  defaultdict
+
+words = ['apple', 'bat', 'bar', 'artom', 'book']
+现在需要把上面你的列表转换成如下字典格式：
+{'a': ['apple', 'artom'], 'b': ['bat', 'bar', 'book']}
+
+(1)
+def func(value):
+    mydict = {}
+    for i in value:
+        first_word = i[0]
+        if first_word not in mydict:
+            mydict[first_word] = [i]
+        else:
+            mydict[first_word].append(i)
+    return mydict
+(2)
+def func(value):
+    mydict = {}
+    for i in value:
+        first_word = i[0]
+        mydict.setdefault(first_word, []).append(i)
+    return mydict
+(3)
+def func(value):
+    mydict = defaultdict(list)
+    for i in value:
+        mydict[i[0]].append(i)
+    return mydict
+
+
+3, 交集合集并集，啦啦啦......
+
+
+a = {1, 2, 3, 4, 5}
+b = {3, 4, 5, 6, 7, 8}
+
+(1)连集
+a.union(b)
+a | b
+
+(2)交集
+a.intersection(b)
+a & b
+
+(3)
+
+
+(4) a是不是b的父集合
+a = {1, 2 ,3 ,4, 5}
+b = {1, 2}
+a.issuperset(b) # True
+
+(5) b是不是a的子集
+a = {1, 2 ,3 ,4, 5}
+b = {1, 2}
+b.issubset(a) #True
