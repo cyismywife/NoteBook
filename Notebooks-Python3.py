@@ -98,3 +98,64 @@ if __name__ == '__main__':
     cc = buildParseTree(dd)
     ee = evaluate(cc)
     print(ee)  # 输出： 14
+
+
+
+3， 更加容易理解的二叉树实现
+class TreeNode:
+    """定义树节点类"""
+    def __init__(self, value, tLeft=None, tRight=None):
+        self.value = value
+        self.tLeft = tLeft
+        self.tRight = tRight
+
+class BinTree:
+    """构造二叉树"""
+    def __init__(self):
+        self.root = None
+        self.ls = []  # 定义列表，用于存储节点地址
+
+    def add(self, value):
+        """定义add方法， 向树结构中添加元素"""
+        node = TreeNode(value)                   # 实例化树节点
+        if self.root == None:
+            self.root = node                     # 若根节点为None，添加根节点，并将根节点的地址值添加到self.ls中
+            self.ls.append(self.root)
+        else:
+            rootNode = self.ls[0]                # 将第一个元素设为根节点
+            if rootNode.tLeft == None:           # 若根节点的左子树为Node，添加左节点，并将其地址值添加到self.ls中
+                rootNode.tLeft = node
+                self.ls.append(rootNode.tLeft)
+            elif rootNode.tRight == None:         # 若根节点的右子树为Node，添加右节点，并将其地址值添加到self.ls中
+                rootNode.tRight = node
+                self.ls.append(rootNode.tRight)
+                self.ls.pop(0)                   # 弹出self.ls第一个位置处的元素
+
+    def preOrder(self, root):
+        """前序遍历(根左右)，递归实现"""
+        if root == None:
+            return
+        print(root.value)
+        self.preOrder(root.tLeft)
+        self.preOrder(root.tRight)
+
+    def inOrder(self, root):
+        """中序遍历(左根右)，递归实现"""
+        if root == None:
+            return
+        self.inOrder(root.tLeft)
+        print(root.value)
+        self.inOrder(root.tRight)
+
+    def postOrder(self, root):
+        """后序遍历(左右根)，递归实现"""
+        if root == None:
+            return
+        self.postOrder(root.tLeft)
+        self.postOrder(root.tRight)
+        print(root.value)
+
+    def preOrderStack(self, root):
+        if root == None:
+            return
+        stack
