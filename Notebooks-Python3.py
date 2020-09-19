@@ -129,7 +129,13 @@ class BinTree:
             elif rootNode.tRight == None:         # 若根节点的右子树为Node，添加右节点，并将其地址值添加到self.ls中
                 rootNode.tRight = node
                 self.ls.append(rootNode.tRight)
-                self.ls.pop(0)                   # 弹出self.ls第一个位置处的元素
+                # 下面这句很关键
+                self.ls.pop(0)                   # 弹出self.ls第一个位置处的元素， 就是为了始终从树的左节点开始添加
+
+                # 仔细说明一下，我们现在需要把0-9等10个元素解析成熟，开始self.is 为空列表。 首次添加的时候，ls变成了[0]
+                # 第二次添加的时候ls变成了[0,1]， 第三次添加的时候，还未执行最后一句时候，ls为[0, 1, 2], 如果没有最后一句弹出ls中的第一个元素
+                	# 那么等到第四次添加元素的时候，依旧还是会根节点的左节点上添加3这个元素，正确的应该是在1这个节点的左节点上面添加才是，
+                		# 所以才需要执行最后一句
 
     def preOrder(self, root):
         """前序遍历(根左右)，递归实现"""
