@@ -162,6 +162,48 @@ class BinTree:
         print(root.value)
 
     def preOrderStack(self, root):
+        """前序遍历（根左右）， 堆栈实现"""
         if root == None:
             return
-        stack
+        stack = []
+        result = []
+        node = root
+
+        while node or stack:
+            while node:    # 寻找当前节点的的左节点，并将其地址添加到stack中
+                result.append(node.value)
+                stack.append(node)
+                node = node.tLeft   # 当某节点不再有左子节点的时候，退出内循环
+            node = stack.pop()
+            node = node.tRight
+        print(result)
+
+    def postOrderStack(self,root):
+        """后序遍历（左右根）：堆栈实现。后序遍历的访问顺序（左右根）
+        可以看成讲先序遍历顺序（根左右）改为（根右左）后的逆序（左右根）"""
+        if root == None:
+            return
+
+        stack = []
+        seq = []
+        result = []
+        node = root
+        while node or stack:
+            while node:
+                seq.append(node.value)
+                stack.append(node)
+                node = node.tRight
+            node = stack.pop()
+            node = node.left
+        while seq:                      # 若seq不为[]，讲seq中的元素逆序添加到result中
+            result.append(seq.pop())
+        print(result)
+
+
+if __name__ == '__main__':
+    myCaiye = BinTree()
+    for i in range(9):
+        myCaiye.add(i)
+
+    myCaiye.preOrderStack(myCaiye.root)
+    myCaiye.preOrder(myCaiye.root)
