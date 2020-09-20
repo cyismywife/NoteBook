@@ -199,6 +199,16 @@ class BinTree:
             result.append(seq.pop())
         print(result)
 
+    def printLeafNode(self, root):
+        """打印二叉树的叶子结点"""
+        if root == None:
+            return
+        if root.tLeft == None and root.tRight == None:
+            print(root.value)
+        self.printLeafNode(root.tLeft)
+        self.printLeafNode(root.tRight)
+
+
 
 if __name__ == '__main__':
     myCaiye = BinTree()
