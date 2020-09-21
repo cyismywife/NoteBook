@@ -210,10 +210,78 @@ class BinTree:
 
 
 
+   def reserveInOrder(self, root):
+        """反向中序遍历（右中左）"""
+        if root == None:
+            return
+
+        self.reserveInOrder(root.tRight)
+        print(root.value)
+        self.reserveInOrder(root.tLeft)
+
+
+def maozhu(root):
+    """通过全局变量来存储中序遍历二叉树的节点"""
+    values = []  # 用来存储值
+
+    def caiye(root):
+        nonlocal values  # 当内部函数要引用外部函数的变量时，需要使用nonlocal关键字
+
+        if root == None:
+            return
+
+        caiye(root.tLeft)
+        value = root.value
+        values.append(value)
+        caiye(root.tRight)
+
+    caiye(root)
+
+    cc = []
+
+    while values:
+        sum = 0
+        for num in values:
+            sum += num
+        cc.append(sum)
+        values.pop(0)
+
+    return cc
+
+
+def caiye(root):
+    """leetcode 538"""
+    # mytotal = 0
+
+    def dfs(root):
+        nonlocal mytotal
+
+
+        if root == None:
+            return
+        dfs(root.tRight)
+        mytotal += root.value
+        root.val = mytotal
+
+        dfs(root.tLeft)
+
+    dfs(root)
+    return root
+
+
+
 if __name__ == '__main__':
     myCaiye = BinTree()
+
+    # mylist = [2, 5, 13]
     for i in range(9):
         myCaiye.add(i)
 
-    myCaiye.preOrderStack(myCaiye.root)
-    myCaiye.preOrder(myCaiye.root)
+    # myCaiye.preOrderStack(myCaiye.root)
+    # myCaiye.preOrder(myCaiye.root)
+    # myCaiye.printLeafNode(myCaiye.root)
+
+    # myCaiye.reserveInOrder(myCaiye.root)
+
+    cc = maozhu(myCaiye.root)
+    print(cc)
