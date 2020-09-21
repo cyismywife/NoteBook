@@ -229,7 +229,6 @@ def maozhu(root):
 
         if root == None:
             return
-
         caiye(root.tLeft)
         value = root.value
         values.append(value)
@@ -238,7 +237,6 @@ def maozhu(root):
     caiye(root)
 
     cc = []
-
     while values:
         sum = 0
         for num in values:
@@ -256,18 +254,15 @@ def caiye(root):
     def dfs(root):
         nonlocal mytotal
 
-
         if root == None:
             return
         dfs(root.tRight)
         mytotal += root.value
         root.val = mytotal
-
         dfs(root.tLeft)
 
     dfs(root)
     return root
-
 
 
 if __name__ == '__main__':
