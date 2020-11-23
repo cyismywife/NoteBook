@@ -121,3 +121,93 @@ a.issuperset(b) # True
 a = {1, 2 ,3 ,4, 5}
 b = {1, 2}
 b.issubset(a) #True
+
+
+
+4， __getitem__  特殊方法（或称魔法方法）
+··················································
+
+import collections
+
+Card = collections.namedtuple('Card', ['rank', 'suit'])
+class FrenchDeck:
+    ranks = [str(i) for i in range(2, 11)] + list('JQKA')
+    suits = 'spades diamons clubs hearts'.split()
+
+    def __init__(self):
+        self._cards = [Card(rank, suit) for suit in self.suits
+                                        for rank in self.ranks]
+
+    def __len__(self):
+        return len(self._cards)
+
+    def __getitem__(self, item):    # 实现这个特殊方法之后，类就支持切片、迭代等操作， in操作也同时支持
+        return self._cards[item]
+·································································
+maozhu = FrenchDeck()
+print(maozhu._cards)
+print(len(maozhu))
+print(maozhu[-1])    # 切片
+print(choice(maozhu))
+
+for i in maozhu:    #  迭代
+    print(i)
+
+if Card(rank='6', suit='diamons') in maozhu:   # in操作
+    print(True)
+else:
+    print(False)
+
+
+
+4， 模拟数值类型 
+
+from math import hypot
+
+class Vactor:
+
+    def __init__(self, x=0, y=0):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):   # ‘字符串表示形式’
+        return 'Vactor(%r, %r)' % (self.x, self.y)
+
+    def __abs__(self):   # 返回模
+        return hypot(self.x, self.y)
+
+    def __bool__(self):
+        return bool(abs(self))
+
+    def __add__(self, other):  # 实现两个Vactor对象相加
+        x = self.x + other.x
+        y = self.y + other.y
+        return Vactor(x, y)
+
+    def __mul__(self, other): 
+        return Vactor(self.x * other, self.y * other)
+·································································
+    aa = Vactor(3, 4)
+    print(abs(aa))   # 输出：5.0
+    print(aa * 3)  # 输出 Vactor(9, 12)
+
+
+
+5， __repr__ 和 __str__ 的区别
+class PrintTest:
+
+    def __repr__(self):
+        return 'This is repr'
+
+    def __str__(self):
+        return  'This is str now'
+
+if __name__ == '__main__':
+    zy = PrintTest()
+    print(zy)   #  优先调用__str__ 
+
+
+ 两者的区别在于，后者是在str()函数被使用，或者用在print函数打印一个对象的时候才被调用的，并且它返回的字符串对终端用户更友好。
+
+如果只想实现这两个特殊方法中的一个，__repr__ 是更好的选择，
+因为如果一个对象没有__str__函数，而Python有需要调用它的时候，解释器会用__repr__作为代替。
