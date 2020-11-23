@@ -162,6 +162,121 @@ class BinTree:
         print(root.value)
 
     def preOrderStack(self, root):
+        """前序遍历（根左右）， 堆栈实现"""
         if root == None:
             return
-        stack
+        stack = []
+        result = []
+        node = root
+
+        while node or stack:
+            while node:    # 寻找当前节点的的左节点，并将其地址添加到stack中
+                result.append(node.value)
+                stack.append(node)
+                node = node.tLeft   # 当某节点不再有左子节点的时候，退出内循环
+            node = stack.pop()
+            node = node.tRight
+        print(result)
+
+    def postOrderStack(self,root):
+        """后序遍历（左右根）：堆栈实现。后序遍历的访问顺序（左右根）
+        可以看成讲先序遍历顺序（根左右）改为（根右左）后的逆序（左右根）"""
+        if root == None:
+            return
+
+        stack = []
+        seq = []
+        result = []
+        node = root
+        while node or stack:
+            while node:
+                seq.append(node.value)
+                stack.append(node)
+                node = node.tRight
+            node = stack.pop()
+            node = node.left
+        while seq:                      # 若seq不为[]，讲seq中的元素逆序添加到result中
+            result.append(seq.pop())
+        print(result)
+
+    def printLeafNode(self, root):
+        """打印二叉树的叶子结点"""
+        if root == None:
+            return
+        if root.tLeft == None and root.tRight == None:
+            print(root.value)
+        self.printLeafNode(root.tLeft)
+        self.printLeafNode(root.tRight)
+
+
+
+   def reserveInOrder(self, root):
+        """反向中序遍历（右中左）"""
+        if root == None:
+            return
+
+        self.reserveInOrder(root.tRight)
+        print(root.value)
+        self.reserveInOrder(root.tLeft)
+
+
+def maozhu(root):
+    """通过全局变量来存储中序遍历二叉树的节点"""
+    values = []  # 用来存储值
+
+    def caiye(root):
+        nonlocal values  # 当内部函数要引用外部函数的变量时，需要使用nonlocal关键字
+
+        if root == None:
+            return
+        caiye(root.tLeft)
+        value = root.value
+        values.append(value)
+        caiye(root.tRight)
+
+    caiye(root)
+
+    cc = []
+    while values:
+        sum = 0
+        for num in values:
+            sum += num
+        cc.append(sum)
+        values.pop(0)
+
+    return cc
+
+
+def caiye(root):
+    """leetcode 538"""
+    # mytotal = 0
+
+    def dfs(root):
+        nonlocal mytotal
+
+        if root == None:
+            return
+        dfs(root.tRight)
+        mytotal += root.value
+        root.val = mytotal
+        dfs(root.tLeft)
+
+    dfs(root)
+    return root
+
+
+if __name__ == '__main__':
+    myCaiye = BinTree()
+
+    # mylist = [2, 5, 13]
+    for i in range(9):
+        myCaiye.add(i)
+
+    # myCaiye.preOrderStack(myCaiye.root)
+    # myCaiye.preOrder(myCaiye.root)
+    # myCaiye.printLeafNode(myCaiye.root)
+
+    # myCaiye.reserveInOrder(myCaiye.root)
+
+    cc = maozhu(myCaiye.root)
+    print(cc)
