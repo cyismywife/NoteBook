@@ -286,3 +286,39 @@ default_factory 接收一个工厂函数作为参数, 例如int str list set等.
 defaultdict在dict的基础上添加了一个__missing__(key)方法, 
 在调用一个不存的key的时候, defaultdict会调用__missing__, 返回一个根据default_factory参数的默认值, 所以不会返回Keyerror.
 
+
+10， 一等对象的定义
+一，在运行时创建
+二，能赋值给变量或数据结构中的元素
+三，能作为参数传给函数
+四，能作为函数的返回结果
+
+
+11，reduce函数 
+会对参数序列中元素进行累积. 函数将一个数据集合（链表，元组等）中的所有数据进行下列操作：
+用传给 reduce 中的函数 function（有两个参数）先对集合中的第 1、2 个元素进行操作，得到的结果再与第三个数据用 function 函数运算，最后得到一个结果。
+
+语法
+
+def add(x, y):
+	return x + y
+
+from functools import reduce
+reduce(add, range(10))  # 计算列表和： 0+1+2+3+...+9
+Out[16]: 45
+reduce(lambda x, y: x * y, range(1, 5))  # 使用lambda匿名函数，计算1*2*3*4
+Out[17]: 24
+
+
+12， partial 偏函数
+简单而言，partial 函数的功能就是：把一个函数的某些参数给固定住，返回一个新的函数
+
+一个简单的例子：
+from functools import partial
+def multiply(x, y):
+    return x * y
+double = partial(multiply, y=2)
+double(2)
+Out[21]: 4
+double(7)
+Out[22]: 14
